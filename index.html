@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Town of Enfield – Interactive Map Help</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #1a3a6b;
+    --navy-dk: #122d55;
+    --navy-lt: #2a4f8f;
+    --accent:  #3d8bd4;
+    --accent2: #f0a500;
+    --bg:      #f5f7fa;
+    --surface: #ffffff;
+    --border:  #dde3ec;
+    --text:    #1c2b40;
+    --muted:   #6b7a93;
+    --sidebar-w: 210px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; font-size: 14px; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  header .seal {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  header h1 { font-size: 15px; font-weight: 600; line-height: 1.2; }
+  header p  { font-size: 11px; opacity: 0.7; font-weight: 300; }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    flex: 1;
+  }
+
+  /* ── SIDEBAR ── */
+  nav {
+    width: var(--sidebar-w);
+    background: var(--navy-dk);
+    flex-shrink: 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+    padding: 12px 0 24px;
+  }
+  nav::-webkit-scrollbar { width: 4px; }
+  nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+  nav .nav-section {
+    padding: 8px 14px 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-top: 8px;
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    color: rgba(255,255,255,0.72);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  nav a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    border-left-color: var(--accent);
+  }
+  nav a.active {
+    color: #fff;
+    background: rgba(61,139,212,0.2);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+  nav a .nav-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    flex: 1;
+    padding: 24px;
+    max-width: 720px;
+    overflow-y: auto;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 40px;
+    scroll-margin-top: 80px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--navy);
+  }
+  .section-header .icon {
+    width: 32px; height: 32px;
+    background: var(--navy);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  /* ── TOOL CARDS ── */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    transition: box-shadow 0.15s;
+  }
+  .tool-card:hover {
+    box-shadow: 0 3px 12px rgba(26,58,107,0.12);
+  }
+  .tool-card .tool-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+  .tool-card .tool-icon {
+    width: 28px; height: 28px;
+    background: var(--navy);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .tool-card .tool-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .tool-card p {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  /* ── FAQ ── */
+  .faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .faq-q {
+    padding: 13px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .faq-q:hover { background: #eef2f8; }
+  .faq-q .chevron {
+    font-size: 11px;
+    color: var(--accent);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .faq-q.open .chevron { transform: rotate(180deg); }
+  .faq-a {
+    display: none;
+    padding: 0 16px 13px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  .faq-a.show { display: block; }
+
+  /* ── PROSE BLOCKS ── */
+  .prose {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .prose + .prose { margin-top: 10px; }
+  .prose strong { color: var(--navy); }
+
+  /* ── STEPS ── */
+  .steps { list-style: none; }
+  .steps li {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .steps li .step-num {
+    width: 22px; height: 22px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: #e8f0fb;
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 11px 14px;
+    font-size: 12.5px;
+    color: var(--navy);
+    margin-top: 12px;
+    line-height: 1.55;
+  }
+  .callout.warn {
+    background: #fff8e8;
+    border-left-color: var(--accent2);
+  }
+
+  /* ── LAYER LIST ── */
+  .layer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .layer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+  }
+  .layer-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── CONTACT ── */
+  .contact-card {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .contact-card h3 { font-size: 15px; margin-bottom: 6px; }
+  .contact-card p  { font-size: 12.5px; opacity: 0.78; margin-bottom: 14px; line-height: 1.55; }
+  .btn {
+    display: inline-block;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--accent2); color: var(--navy-dk); }
+  .btn-outline  { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.3); margin-left: 8px; }
+
+  /* ── BASEMAP GALLERY ── */
+  .basemap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .basemap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .basemap-thumb {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .basemap-label {
+    padding: 6px 10px 8px;
+    font-weight: 600;
+    color: var(--navy);
+    font-size: 11.5px;
+  }
+  .basemap-desc {
+    padding: 0 10px 8px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .bg-imagery  { background: #2d4a2d; }
+  .bg-hybrid   { background: #1a2d1a; }
+  .bg-streets  { background: #e8e0d5; }
+  .bg-topo     { background: #d4c89a; }
+  .bg-hillshade{ background: #b0bec5; }
+  .bg-2023c    { background: #4a6741; }
+  .bg-naip23   { background: #3d5c35; }
+  .bg-naip21   { background: #8a9e82; }
+
+  /* ── SEARCH TIP ── */
+  .search-examples {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .search-ex {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .search-ex .ex-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .search-ex .ex-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--navy);
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .feedback-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    transition: all 0.15s;
+  }
+  .feedback-btn:hover { box-shadow: 0 3px 10px rgba(26,58,107,0.15); border-color: var(--accent); }
+  .feedback-btn .fb-icon { font-size: 22px; margin-bottom: 5px; }
+  .feedback-btn .fb-label { font-size: 12px; font-weight: 600; color: var(--navy); }
+  .feedback-btn .fb-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="seal">🏛️</div>
+  <div>
+    <h1>Town of Enfield Interactive Map</h1>
+    <p>Help & User Guide</p>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR NAV -->
+  <nav id="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <a href="#getting-started" class="nav-link active"><span class="nav-icon">🚀</span> Getting Started</a>
+    <a href="#search" class="nav-link"><span class="nav-icon">🔍</span> Search</a>
+    <a href="#property-panel" class="nav-link"><span class="nav-icon">📋</span> Property Panel</a>
+    <a href="#map-navigation" class="nav-link"><span class="nav-icon">🗺️</span> Map Navigation</a>
+
+    <div class="nav-section">Toolbar</div>
+    <a href="#select" class="nav-link"><span class="nav-icon">↖️</span> Select</a>
+    <a href="#markup" class="nav-link"><span class="nav-icon">✏️</span> Markup</a>
+    <a href="#share" class="nav-link"><span class="nav-icon">🔗</span> Share</a>
+    <a href="#mail-labels" class="nav-link"><span class="nav-icon">📬</span> Mail Labels</a>
+    <a href="#abutters" class="nav-link"><span class="nav-icon">📍</span> Abutters</a>
+    <a href="#measure" class="nav-link"><span class="nav-icon">📏</span> Measure</a>
+    <a href="#print" class="nav-link"><span class="nav-icon">🖨️</span> Print</a>
+    <a href="#legend" class="nav-link"><span class="nav-icon">📖</span> Legend</a>
+    <a href="#layers" class="nav-link"><span class="nav-icon">🗂️</span> Map Layers</a>
+    <a href="#basemaps" class="nav-link"><span class="nav-icon">🛰️</span> Basemaps</a>
+
+    <div class="nav-section">Support</div>
+    <a href="#faq" class="nav-link"><span class="nav-icon">❓</span> FAQ</a>
+    <a href="#contact" class="nav-link"><span class="nav-icon">✉️</span> Contact</a>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main>
+
+    <!-- GETTING STARTED -->
+    <div class="section" id="getting-started">
+      <div class="section-header">
+        <div class="icon">🚀</div>
+        <h2>Getting Started</h2>
+      </div>
+      <div class="prose">
+        The <strong>Town of Enfield Interactive Map</strong> provides public access to property records, zoning information, school districts, flood zones, and more for all parcels within Enfield, CT.
+      </div>
+      <div class="prose" style="margin-top:10px;">
+        <strong>How to find a property:</strong> Use the search bar in the top right to look up any parcel by street address, Parcel ID, or Map and Lot number. Clicking a result will zoom the map to that parcel and load its details in the left panel.
+      </div>
+      <div class="callout">
+        💡 <strong>New to the app?</strong> Use the on-screen tour (launched automatically on first visit) to get a guided walkthrough of the key features.
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="section" id="search">
+      <div class="section-header">
+        <div class="icon">🔍</div>
+        <h2>Search</h2>
+      </div>
+      <div class="prose">
+        The search bar at the top right accepts three types of input. Type your search term and select a result from the dropdown to zoom directly to that parcel.
+      </div>
+      <div class="search-examples">
+        <div class="search-ex">
+          <div class="ex-label">Street Address</div>
+          <div class="ex-val">100 Hazard Ave</div>
+        </div>
+        <div class="search-ex">
+          <div class="ex-label">Parcel ID</div>
+          <div class="ex-val">5400010010</div>
+        </div>
+        <div class="search-ex">
+          <div class="ex-label">Map & Lot</div>
+          <div class="ex-val">F7 / 141</div>
+        </div>
+      </div>
+      <div class="callout warn">
+        ⚠️ If your search returns no results, try a shorter term. For example, search <strong>"Hazard"</strong> instead of <strong>"100 Hazard Avenue"</strong> to see all matching results.
+      </div>
+    </div>
+
+    <!-- PROPERTY PANEL -->
+    <div class="section" id="property-panel">
+      <div class="section-header">
+        <div class="icon">📋</div>
+        <h2>Property Information Panel</h2>
+      </div>
+      <div class="prose">
+        When a parcel is selected, the left panel populates with detailed property information organized into collapsible sections:
+      </div>
+      <div class="layer-list">
+        <div class="layer-item"><div class="layer-dot" style="background:#1a3a6b"></div><strong>Property</strong> — Parcel ID, PID, address</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#2a4f8f"></div><strong>Ownership</strong> — Owner name, book/page</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#3d8bd4"></div><strong>Land</strong> — Acreage, map number, zoning</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#5ba3e0"></div><strong>Sales</strong> — Recent sale history</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#7abced"></div><strong>School Districts</strong> — Elementary and high school assignment</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#a0cef5"></div><strong>Sanitation &amp; Winter Roads</strong> — Refuse pickup day, plow/sanding routes</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#c0dff8"></div><strong>Fire District</strong> — Assigned fire district with link</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#daeefb"></div><strong>Flood Zone &amp; FEMA</strong> — FEMA panel links and flood zone classification</div>
+      </div>
+      <div class="callout" style="margin-top:12px;">
+        💡 Action buttons at the top of the panel provide quick links to the <strong>Assessor Card</strong>, <strong>Google Map</strong>, <strong>Bing Map</strong>, <strong>Street View</strong>, <strong>Permitting</strong>, and <strong>Land Records</strong>.
+      </div>
+    </div>
+
+    <!-- MAP NAVIGATION -->
+    <div class="section" id="map-navigation">
+      <div class="section-header">
+        <div class="icon">🗺️</div>
+        <h2>Map Navigation</h2>
+      </div>
+      <div class="tool-grid">
+        <div class="tool-card">
+          <div class="tool-header"><div class="tool-icon">+</div><div class="tool-name">Zoom In / Out</div></div>
+          <p>Use the + and – buttons on the left side of the map, or scroll your mouse wheel to zoom in and out.</p>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header"><div class="tool-icon">🏠</div><div class="tool-name">Home / Default Extent</div></div>
+          <p>Click the home icon to zoom back out to the full extent of Enfield.</p>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header"><div class="tool-icon">🧭</div><div class="tool-name">Compass / North Arrow</div></div>
+          <p>Click the compass to reset the map to north-up orientation if you've rotated the view.</p>
+        </div>
+        <div class="tool-card">
+          <div class="tool-header"><div class="tool-icon">📌</div><div class="tool-name">My Location</div></div>
+          <p>Use the location button to center the map on your current GPS location (requires browser permission).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SELECT -->
+    <div class="section" id="select">
+      <div class="section-header">
+        <div class="icon">↖️</div>
+        <h2>Select Tool</h2>
+      </div>
+      <div class="prose">
+        The <strong>Select</strong> tool lets you click or draw on the map to select one or more parcels. Selected parcels will be highlighted and their details will load in the property panel.
+      </div>
+      <ul class="steps" style="margin-top:12px;">
+        <li><div class="step-num">1</div>Click the <strong>Select</strong> icon in the toolbar.</li>
+        <li><div class="step-num">2</div>Use the dropdown arrow to switch between <strong>point click</strong>, <strong>rectangle draw</strong>, or <strong>polygon draw</strong> selection modes.</li>
+        <li><div class="step-num">3</div>Click or draw on the map to select parcels. Multiple parcels can be selected at once.</li>
+        <li><div class="step-num">4</div>Click <strong>Clear All</strong> to deselect all parcels.</li>
+      </ul>
+      <div class="callout">
+        💡 The Select tool defaults to the <strong>Parcels</strong> layer. Other selectable layers may be toggled in the panel.
+      </div>
+    </div>
+
+    <!-- MARKUP -->
+    <div class="section" id="markup">
+      <div class="section-header">
+        <div class="icon">✏️</div>
+        <h2>Markup / Draw Tool</h2>
+      </div>
+      <div class="prose">
+        The <strong>Markup</strong> tool opens a drawing toolbar that lets you annotate the map with points, lines, shapes, and text. Markup is temporary — it exists only in your current session and is not saved to the map.
+      </div>
+      <div class="tool-grid" style="margin-top:12px;">
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">↖</div><div class="tool-name">Select</div></div><p>Select and move existing markup elements.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">📍</div><div class="tool-name">Point</div></div><p>Place a point marker on the map.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">╱</div><div class="tool-name">Line</div></div><p>Draw a straight line segment.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">〰</div><div class="tool-name">Polyline</div></div><p>Draw a multi-segment freehand line.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">⬜</div><div class="tool-name">Rectangle</div></div><p>Draw a rectangle shape.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">⬭</div><div class="tool-name">Ellipse</div></div><p>Draw a circle or oval shape.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">T</div><div class="tool-name">Text</div></div><p>Add a text label anywhere on the map.</p></div>
+        <div class="tool-card"><div class="tool-header"><div class="tool-icon">↩</div><div class="tool-name">Undo / Redo</div></div><p>Undo or redo the last markup action.</p></div>
+      </div>
+      <div class="callout warn">
+        ⚠️ Markup is not saved between sessions. If you want to preserve your annotations, use the <strong>Print</strong> or <strong>Share</strong> tool before closing the app.
+      </div>
+    </div>
+
+    <!-- SHARE -->
+    <div class="section" id="share">
+      <div class="section-header">
+        <div class="icon">🔗</div>
+        <h2>Share</h2>
+      </div>
+      <div class="prose">
+        The <strong>Share</strong> tool generates a shareable link to the current map view. The link preserves your current zoom level, location, and selected parcel so recipients see exactly what you see.
+      </div>
+      <ul class="steps" style="margin-top:12px;">
+        <li><div class="step-num">1</div>Click the <strong>Share</strong> icon in the toolbar.</li>
+        <li><div class="step-num">2</div>A shortened URL is generated automatically. Copy it to your clipboard.</li>
+        <li><div class="step-num">3</div>Optionally share directly via <strong>Email</strong>, <strong>Facebook</strong>, <strong>X (Twitter)</strong>, <strong>Pinterest</strong>, or <strong>LinkedIn</strong>.</li>
+        <li><div class="step-num">4</div>Use the <strong>Embed</strong> option (the <code>&lt;/&gt;</code> icon) to get an iframe code for embedding the map on a website.</li>
+      </ul>
+    </div>
+
+    <!-- MAIL LABELS -->
+    <div class="section" id="mail-labels">
+      <div class="section-header">
+        <div class="icon">📬</div>
+        <h2>Abutters Mail Label Generator</h2>
+      </div>
+      <div class="prose">
+        The <strong>Mail Label Generator</strong> is a custom tool developed by the Town of Enfield GIS Division. It converts an abutters list exported from the Near Me / Abutters tool into print-ready <strong>Avery 5160</strong> mailing labels.
+      </div>
+      <ul class="steps" style="margin-top:12px;">
+        <li><div class="step-num">1</div>Use the <strong>Abutters</strong> tool to generate a list of nearby parcels and export it as a <strong>ZIP file</strong>.</li>
+        <li><div class="step-num">2</div>Open the <strong>Mail Label Generator</strong> from the toolbar.</li>
+        <li><div class="step-num">3</div>Upload the exported ZIP file in Step 1 of the generator.</li>
+        <li><div class="step-num">4</div>Configure your label options in Step 2.</li>
+        <li><div class="step-num">5</div>Click <strong>Generate</strong> in Step 3 to download a print-ready PDF.</li>
+      </ul>
+      <div class="callout">
+        💡 This tool is intended for use with public hearing notifications and other mailings requiring abutting property owner lists.
+      </div>
+    </div>
+
+    <!-- ABUTTERS -->
+    <div class="section" id="abutters">
+      <div class="section-header">
+        <div class="icon">📍</div>
+        <h2>Abutters (Near Me)</h2>
+      </div>
+      <div class="prose">
+        The <strong>Abutters</strong> tool identifies parcels within a specified distance of a selected location. It is commonly used to generate lists of neighboring property owners for public hearing notifications.
+      </div>
+      <ul class="steps" style="margin-top:12px;">
+        <li><div class="step-num">1</div>Click the <strong>Abutters</strong> icon in the toolbar.</li>
+        <li><div class="step-num">2</div>Choose your location method: <strong>click on map</strong>, <strong>draw a line</strong>, or <strong>draw a polygon</strong>.</li>
+        <li><div class="step-num">3</div>Set your desired <strong>buffer distance</strong> in feet.</li>
+        <li><div class="step-num">4</div>The tool will highlight all parcels within that distance and list their owners.</li>
+        <li><div class="step-num">5</div>Export the list as a ZIP file for use with the Mail Label Generator.</li>
+      </ul>
+    </div>
+
+    <!-- MEASURE -->
+    <div class="section" id="measure">
+      <div class="section-header">
+        <div class="icon">📏</div>
+        <h2>Measure</h2>
+      </div>
+      <div class="prose">
+        The <strong>Measure</strong> tool lets you calculate distances and areas directly on the map. Results display in real time as you click points.
+      </div>
+      <ul class="steps" style="margin-top:12px;">
+        <li><div class="step-num">1</div>Click the <strong>Measure</strong> icon in the toolbar.</li>
+        <li><div class="step-num">2</div>Select <strong>distance</strong> or <strong>area</strong> measurement mode.</li>
+        <li><div class="step-num">3</div>Choose your preferred units (Feet, Miles, Meters, etc.) from the dropdown.</li>
+        <li><div class="step-num">4</div>Click on the map to place your first point, then continue clicking to add segments.</li>
+        <li><div class="step-num">5</div>Double-click to finish. Use the trash icon to clear the measurement.</li>
+      </ul>
+    </div>
+
+    <!-- PRINT -->
+    <div class="section" id="print">
+      <div class="section-header">
+        <div class="icon">🖨️</div>
+        <h2>Print</h2>
+      </div>
+      <div class="prose">
+        The <strong>Print</strong> tool exports the current map view as a printable document. First position and zoom the map to the area you want to print, then use this tool to generate the output.
+      </div>
+      <ul class="steps" style="margin-top:12px;">
+        <li><div class="step-num">1</div>Zoom and pan the map to the area you want to print.</li>
+        <li><div class="step-num">2</div>Click the <strong>Print</strong> icon in the toolbar.</li>
+        <li><div class="step-num">3</div>Select a <strong>Template</strong> (e.g., A3 Landscape).</li>
+        <li><div class="step-num">4</div>Check <strong>Show print area</strong> to preview what will be included.</li>
+        <li><div class="step-num">5</div>Click <strong>Print</strong> to generate the PDF. A new tab or download will open.</li>
+      </ul>
+      <div class="callout warn">
+        ⚠️ If nothing happens when you click Print, check that your browser is not <strong>blocking pop-ups</strong> from this site. Allow pop-ups and try again.
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="section" id="legend">
+      <div class="section-header">
+        <div class="icon">📖</div>
+        <h2>Legend</h2>
+      </div>
+      <div class="prose">
+        The <strong>Legend</strong> explains the symbols and colors used in the current map view. It updates automatically based on which layers are visible.
+      </div>
+      <div class="layer-list" style="margin-top:10px;">
+        <div class="layer-item"><div class="layer-dot" style="background:#1a3a6b;border:2px solid #1a3a6b;"></div>Town Boundary — Enfield municipal boundary</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#888;"></div>Contours 2 Ft — Fine elevation contours</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#555;"></div>Contours 10 Ft — Coarse elevation contours</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#c8c8c8;border:1px solid #888;"></div>Parcels — Property parcel boundaries</div>
+      </div>
+    </div>
+
+    <!-- MAP LAYERS -->
+    <div class="section" id="layers">
+      <div class="section-header">
+        <div class="icon">🗂️</div>
+        <h2>Map Layers</h2>
+      </div>
+      <div class="prose">
+        The <strong>Map Layers</strong> panel lets you toggle additional data layers on and off. These layers are hidden by default to keep the map clean but can be enabled as needed.
+      </div>
+      <div class="layer-list" style="margin-top:10px;">
+        <div class="layer-item"><div class="layer-dot" style="background:#4a90d9"></div><strong>Catch Basins</strong> — Storm drain catch basin locations</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#7b68ee"></div><strong>Drain Manholes</strong> — Stormwater manhole locations</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#20b2aa"></div><strong>Drop Inlets</strong> — Drainage drop inlet locations</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#e74c3c"></div><strong>Fire Hydrants</strong> — Public fire hydrant locations</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#27ae60"></div><strong>Food Pantries</strong> — Local food pantry locations</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#8e44ad"></div><strong>Historic Preservation Above Ground Sites</strong> — Historically significant properties</div>
+        <div class="layer-item"><div class="layer-dot" style="background:#e67e22"></div><strong>Polling Places</strong> — Election polling place locations</div>
+      </div>
+    </div>
+
+    <!-- BASEMAPS -->
+    <div class="section" id="basemaps">
+      <div class="section-header">
+        <div class="icon">🛰️</div>
+        <h2>Basemaps &amp; Aerial Imagery</h2>
+      </div>
+      <div class="prose">
+        Two basemap galleries are available. The <strong>Basemap Gallery</strong> offers general-purpose backgrounds; the <strong>Local Aerial Gallery</strong> provides high-resolution aerial photography specific to Connecticut.
+      </div>
+
+      <p style="font-size:12px;font-weight:700;color:var(--navy);margin:14px 0 8px;">Basemap Gallery</p>
+      <div class="basemap-grid">
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-imagery">🛰️</div>
+          <div class="basemap-label">Imagery</div>
+          <div class="basemap-desc">Global satellite imagery from Esri.</div>
+        </div>
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-hybrid">🌆</div>
+          <div class="basemap-label">Imagery Hybrid</div>
+          <div class="basemap-desc">Satellite imagery with street label overlay.</div>
+        </div>
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-streets">🛣️</div>
+          <div class="basemap-label">Streets</div>
+          <div class="basemap-desc">Standard street map with road network.</div>
+        </div>
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-topo">⛰️</div>
+          <div class="basemap-label">Topographic</div>
+          <div class="basemap-desc">Topographic map with elevation contours. <strong>(Default)</strong></div>
+        </div>
+      </div>
+
+      <p style="font-size:12px;font-weight:700;color:var(--navy);margin:16px 0 8px;">Local Aerial Gallery</p>
+      <div class="basemap-grid">
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-hillshade">🏔️</div>
+          <div class="basemap-label">World Hillshade</div>
+          <div class="basemap-desc">Shaded relief showing terrain.</div>
+        </div>
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-2023c">📸</div>
+          <div class="basemap-label">2023 Spring, Color</div>
+          <div class="basemap-desc">3-inch resolution spring aerial, Connecticut.</div>
+        </div>
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-naip23">🌿</div>
+          <div class="basemap-label">2023 NAIP Summer</div>
+          <div class="basemap-desc">0.3-meter NAIP summer imagery.</div>
+        </div>
+        <div class="basemap-card">
+          <div class="basemap-thumb bg-naip21">🍂</div>
+          <div class="basemap-label">2021 NAIP Summer</div>
+          <div class="basemap-desc">0.6-meter NAIP summer imagery.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section" id="faq">
+      <div class="section-header">
+        <div class="icon">❓</div>
+        <h2>FAQ &amp; Troubleshooting</h2>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I find a specific property? <span class="chevron">▼</span></div>
+        <div class="faq-a">Use the search bar at the top right. You can search by street address, Parcel ID, or Map and Lot number. If you're not getting results, try a shorter search term — for example, type "Hazard" instead of "100 Hazard Avenue."</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Who owns this parcel? <span class="chevron">▼</span></div>
+        <div class="faq-a">Select the parcel on the map or search for it by address. Ownership information appears in the <strong>Ownership</strong> section of the left-hand property panel.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is this property in a flood zone? <span class="chevron">▼</span></div>
+        <div class="faq-a">Select the parcel and scroll to the <strong>Flood Zone &amp; FEMA Information</strong> section in the property panel. From there you can view or download the official FEMA FIRM map panel for that parcel.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What zoning district is this parcel in? <span class="chevron">▼</span></div>
+        <div class="faq-a">Select the parcel and open the <strong>Zoning</strong> section in the property panel. The zone code is listed there. For full zoning regulations, contact the Town of Enfield Planning &amp; Zoning department.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I use this data for a legal survey or boundary dispute? <span class="chevron">▼</span></div>
+        <div class="faq-a">No. The data in this application is for <strong>informational and planning purposes only</strong>. Parcel boundaries shown are approximate. For official boundary determinations, consult a licensed land surveyor.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How accurate is the parcel data? <span class="chevron">▼</span></div>
+        <div class="faq-a">Parcel data is provided by the Town of Enfield Assessor's Office and updated periodically. While efforts are made to maintain accuracy, the Town does not guarantee the data is free of errors. Always verify critical information with the Assessor's Office directly.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Why isn't the map loading or why is it slow? <span class="chevron">▼</span></div>
+        <div class="faq-a">Try refreshing the page. The map works best in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>. Avoid Internet Explorer. If issues persist, clear your browser cache or try a different browser.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Why don't certain layers display when zoomed in or out? <span class="chevron">▼</span></div>
+        <div class="faq-a">Some layers are scale-dependent and only display at certain zoom levels. If a layer isn't showing, try zooming in or out a few levels. The Legend will indicate which layers are currently visible.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Nothing happens when I click Print. What do I do? <span class="chevron">▼</span></div>
+        <div class="faq-a">Your browser may be blocking pop-ups from this site. Look for a pop-up blocked notification in your browser's address bar and click it to allow pop-ups from this application, then try printing again.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I zoom back out to see all of Enfield? <span class="chevron">▼</span></div>
+        <div class="faq-a">Click the <strong>Home</strong> button (house icon) on the left side of the map to return to the default full-town extent.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">The information shown for my property is incorrect. Who do I contact? <span class="chevron">▼</span></div>
+        <div class="faq-a">Property data is sourced from the Town of Enfield Assessor's Office. To report an error, please contact the GIS Division or Assessor's Office directly using the contact information below.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I turn on aerial/satellite imagery? <span class="chevron">▼</span></div>
+        <div class="faq-a">Click the <strong>Basemap Gallery</strong> or <strong>Local Aerial Gallery</strong> icons in the toolbar. Select <strong>Imagery</strong> or one of the Connecticut-specific aerial options such as <strong>2023 Spring, Color, 3 inch</strong> for the highest resolution available.</div>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="section" id="contact">
+      <div class="section-header">
+        <div class="icon">✉️</div>
+        <h2>Contact &amp; Feedback</h2>
+      </div>
+      <div class="contact-card">
+        <h3>Town of Enfield GIS Division</h3>
+        <p>Have a question not answered here, found an error in the data, or want to share feedback about the application? We'd love to hear from you.</p>
+        <a class="btn btn-primary" href="#" onclick="window.location.href='mai'+'lto:'+'gis@enfield-ct.gov';return false;">📧 Email GIS Division</a>
+        <a class="btn btn-outline" href="https://www.enfield-ct.gov" target="_blank">🌐 Town Website</a>
+      </div>
+      <div class="feedback-row">
+        <a class="feedback-btn" href="#" onclick="window.location.href='mai'+'lto:'+'gis@enfield-ct.gov?subject=Map Data Error Report';return false;">
+          <div class="fb-icon">⚠️</div>
+          <div class="fb-label">Report a Data Error</div>
+          <div class="fb-desc">Something looks wrong on the map</div>
+        </a>
+        <a class="feedback-btn" href="#" onclick="window.location.href='mai'+'lto:'+'gis@enfield-ct.gov?subject=Interactive Map Feedback';return false;">
+          <div class="fb-icon">💬</div>
+          <div class="fb-label">Share Feedback</div>
+          <div class="fb-desc">Suggestions to improve the app</div>
+        </a>
+        <a class="feedback-btn" href="#" onclick="window.location.href='mai'+'lto:'+'gis@enfield-ct.gov?subject=Interactive Map Help Request';return false;">
+          <div class="fb-icon">🙋</div>
+          <div class="fb-label">Request Help</div>
+          <div class="fb-desc">Need assistance using the map</div>
+        </a>
+      </div>
+      <div class="callout" style="margin-top:12px;">
+        💡 <strong>Note:</strong> This application is for informational purposes only. Data provided by the Town of Enfield. All parcel boundaries are approximate and should not be used for legal purposes.
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // FAQ accordion
+  function toggleFaq(el) {
+    const answer = el.nextElementSibling;
+    const isOpen = answer.classList.contains('show');
+    // close all
+    document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('show'));
+    document.querySelectorAll('.faq-q').forEach(q => q.classList.remove('open'));
+    if (!isOpen) {
+      answer.classList.add('show');
+      el.classList.add('open');
+    }
+  }
+
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + entry.target.id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
