@@ -45,6 +45,8 @@
   .two-col-text { flex:1; min-width:0; }
   .two-col-img { flex:0 0 210px; max-width:210px; }
   .two-col-img img { width:100%; border-radius:6px; display:block; }
+  .two-col-img.nav-img { flex:0 0 80px; max-width:80px; }
+  .two-col-img img.natural { width:auto; max-width:100%; border-radius:6px; display:block; }
   .section img.full { max-width:100%; height:auto; max-height:260px; object-fit:contain; object-position:left; border-radius:6px; margin-top:10px; display:block; }
   .layer-list { display:flex; flex-direction:column; gap:4px; margin-top:8px; }
   .layer-item { display:flex; align-items:center; gap:9px; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:6px 11px; font-size:12.5px; }
@@ -227,7 +229,7 @@
         <div class="nav-card"><div class="nc-icon">&#8659;</div><div><div class="nc-name">North Arrow</div><div class="nc-desc">Click to reset to north-up orientation.</div></div></div>
       </div>
     </div>
-    <div class="two-col-img"><img src="img-map-nav.png" alt="Map navigation controls"></div>
+    <div class="two-col-img nav-img"><img src="img-map-nav.png" alt="Map navigation controls"></div>
   </div>
 </div>
 
@@ -247,7 +249,7 @@
       </ul>
       <div class="callout">&#128161; The Select tool defaults to the <strong>Parcels</strong> layer. Other selectable layers can be toggled in the panel.</div>
     </div>
-    <div class="two-col-img"><img src="img-select-panel.png" alt="Select tool panel"></div>
+    <div class="two-col-img"><img src="img-select-panel.png" class="natural" alt="Select tool panel"></div>
   </div>
 </div>
 
